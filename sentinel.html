@@ -1,0 +1,1497 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SENTINEL — 企業地緣政治風險中心</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans+TC:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --bg: #04070d;
+      --surface: #080e18;
+      --surface2: #0d1624;
+      --border: #1a2840;
+      --border2: #243650;
+      --accent: #00d4ff;
+      --accent2: #ff3d3d;
+      --accent3: #ffd166;
+      --text: #c8daf0;
+      --muted: #4a6080;
+      --up: #00e5a0;
+      --down: #ff4455;
+      --warn: #ffd166;
+      --display: 'Bebas Neue', sans-serif;
+      --mono: 'IBM Plex Mono', monospace;
+      --body: 'Noto Sans TC', sans-serif;
+    }
+
+    html,
+    body {
+      height: 100%;
+      overflow: hidden
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 13px
+    }
+
+    /* scanline overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 212, 255, .015) 2px, rgba(0, 212, 255, .015) 4px);
+      pointer-events: none;
+      z-index: 1000
+    }
+
+    /* LAYOUT */
+    .shell {
+      display: grid;
+      grid-template-rows: 52px 1fr;
+      grid-template-columns: 260px 1fr 300px;
+      height: 100vh
+    }
+
+    .topbar {
+      grid-column: 1/-1;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0;
+      z-index: 10
+    }
+
+    .sidebar {
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .map-area {
+      position: relative;
+      overflow: hidden;
+      background: #04070d
+    }
+
+    .alert-panel {
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    /* TOPBAR */
+    .logo-block {
+      padding: 0 20px;
+      border-right: 1px solid var(--border);
+      height: 100%;
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .logo-text {
+      font-family: var(--display);
+      font-size: 26px;
+      letter-spacing: 2px;
+      color: #fff
+    }
+
+    .logo-text span {
+      color: var(--accent)
+    }
+
+    .logo-sub {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 2px;
+      line-height: 1.3
+    }
+
+    .topbar-metrics {
+      display: flex;
+      flex: 1;
+      height: 100%
+    }
+
+    .tm {
+      padding: 0 20px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 2px;
+      cursor: default
+    }
+
+    .tm-label {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase
+    }
+
+    .tm-value {
+      font-size: 18px;
+      font-family: var(--display);
+      letter-spacing: 1px;
+      line-height: 1
+    }
+
+    .tm-value.red {
+      color: var(--down)
+    }
+
+    .tm-value.amber {
+      color: var(--warn)
+    }
+
+    .tm-value.green {
+      color: var(--up)
+    }
+
+    .tm-value.blue {
+      color: var(--accent)
+    }
+
+    .tm-sub {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted)
+    }
+
+    .topbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px
+    }
+
+    .live-pill {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border: 1px solid var(--up);
+      border-radius: 2px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--up);
+      letter-spacing: 1px
+    }
+
+    .live-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--up);
+      animation: blink 1.2s ease-in-out infinite
+    }
+
+    @keyframes blink {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .2
+      }
+    }
+
+    .time-display {
+      font-family: var(--mono);
+      font-size: 12px;
+      color: var(--muted)
+    }
+
+    /* SIDEBAR */
+    .sb-section {
+      padding: 12px 16px 8px;
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .company-card {
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .15s
+    }
+
+    .company-card:hover,
+    .company-card.active {
+      background: var(--surface2)
+    }
+
+    .company-card.active {
+      border-left: 2px solid var(--accent)
+    }
+
+    .cc-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px
+    }
+
+    .cc-industry {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-bottom: 6px
+    }
+
+    .cc-sites {
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap
+    }
+
+    .site-tag {
+      font-size: 10px;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-family: var(--mono)
+    }
+
+    .site-tag.red {
+      background: rgba(255, 68, 85, .15);
+      border: 1px solid rgba(255, 68, 85, .4);
+      color: var(--down)
+    }
+
+    .site-tag.amber {
+      background: rgba(255, 209, 102, .12);
+      border: 1px solid rgba(255, 209, 102, .35);
+      color: var(--warn)
+    }
+
+    .site-tag.green {
+      background: rgba(0, 229, 160, .1);
+      border: 1px solid rgba(0, 229, 160, .3);
+      color: var(--up)
+    }
+
+    .cc-risk {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px
+    }
+
+    .risk-bar-wrap {
+      flex: 1;
+      height: 3px;
+      background: var(--border2);
+      border-radius: 1px;
+      overflow: hidden
+    }
+
+    .risk-bar {
+      height: 100%;
+      border-radius: 1px;
+      transition: width .5s
+    }
+
+    .risk-score {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 500
+    }
+
+    .add-btn {
+      margin: 12px 16px;
+      padding: 8px;
+      background: transparent;
+      border: 1px dashed var(--border2);
+      border-radius: 2px;
+      color: var(--muted);
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      text-align: center;
+      transition: all .15s
+    }
+
+    .add-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    /* MAP AREA */
+    .map-wrap {
+      width: 100%;
+      height: 100%
+    }
+
+    .map-wrap svg {
+      width: 100%;
+      height: 100%
+    }
+
+    .country-path {
+      cursor: pointer;
+      transition: fill .2s
+    }
+
+    .country-path:hover {
+      fill: #1a2840 !important;
+      stroke: #00d4ff !important;
+      stroke-width: 1.5 !important
+    }
+
+    .country-path.selected {
+      fill: #0d2040 !important;
+      stroke: #00d4ff !important;
+      stroke-width: 1.5 !important
+    }
+
+    /* exposure markers */
+    .exp-marker {
+      cursor: pointer;
+      animation: markerIn .4s ease-out
+    }
+
+    @keyframes markerIn {
+      from {
+        opacity: 0;
+        transform: scale(0)
+      }
+
+      to {
+        opacity: 1;
+        transform: scale(1)
+      }
+    }
+
+    .exp-pulse {
+      animation: expPulse 2.5s ease-out infinite
+    }
+
+    @keyframes expPulse {
+      0% {
+        r: 12;
+        opacity: .6
+      }
+
+      70% {
+        r: 22;
+        opacity: 0
+      }
+
+      100% {
+        r: 22;
+        opacity: 0
+      }
+    }
+
+    /* alert badge on map */
+    .alert-badge {
+      animation: alertPop .3s ease-out, alertPulse 2s ease-in-out 1s infinite
+    }
+
+    @keyframes alertPop {
+      from {
+        transform: scale(0) translateY(5px)
+      }
+
+      to {
+        transform: scale(1) translateY(0)
+      }
+    }
+
+    @keyframes alertPulse {
+
+      0%,
+      100% {
+        opacity: 1
+      }
+
+      50% {
+        opacity: .6
+      }
+    }
+
+    /* map overlay controls */
+    .map-controls {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px
+    }
+
+    .mc-btn {
+      padding: 6px 12px;
+      background: rgba(8, 14, 24, .9);
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      color: var(--muted);
+      font-size: 10px;
+      font-family: var(--mono);
+      cursor: pointer;
+      letter-spacing: .5px;
+      transition: all .15s;
+      white-space: nowrap
+    }
+
+    .mc-btn:hover,
+    .mc-btn.on {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .map-legend {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: rgba(8, 14, 24, .92);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 10px 14px
+    }
+
+    .ml-title {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      margin-bottom: 8px
+    }
+
+    .ml-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text)
+    }
+
+    .ml-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0
+    }
+
+    .tooltip-map {
+      position: absolute;
+      background: rgba(8, 14, 24, .95);
+      border: 1px solid var(--border2);
+      border-radius: 2px;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-family: var(--mono);
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity .15s;
+      z-index: 20
+    }
+
+    .tooltip-map.show {
+      opacity: 1
+    }
+
+    /* ALERT PANEL */
+    .ap-header {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .ap-title {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      flex: 1
+    }
+
+    .ap-count {
+      font-family: var(--display);
+      font-size: 20px;
+      color: var(--down)
+    }
+
+    .ap-filters {
+      display: flex;
+      gap: 4px;
+      padding: 8px 16px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0
+    }
+
+    .af-btn {
+      padding: 4px 10px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      cursor: pointer;
+      transition: all .15s
+    }
+
+    .af-btn.on,
+    .af-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent)
+    }
+
+    .af-btn.red.on {
+      border-color: var(--down);
+      color: var(--down)
+    }
+
+    .alerts-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0
+    }
+
+    .alerts-list::-webkit-scrollbar {
+      width: 3px
+    }
+
+    .alerts-list::-webkit-scrollbar-thumb {
+      background: var(--border2)
+    }
+
+    .alert-item {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      cursor: pointer;
+      transition: background .1s;
+      animation: alertIn .3s ease-out
+    }
+
+    @keyframes alertIn {
+      from {
+        opacity: 0;
+        transform: translateX(20px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    .alert-item:hover {
+      background: var(--surface2)
+    }
+
+    .ai-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 5px
+    }
+
+    .sev {
+      font-size: 9px;
+      font-family: var(--mono);
+      font-weight: 500;
+      padding: 2px 6px;
+      border-radius: 2px;
+      letter-spacing: .5px;
+      text-transform: uppercase
+    }
+
+    .sev.critical {
+      background: rgba(255, 68, 85, .2);
+      border: 1px solid rgba(255, 68, 85, .5);
+      color: var(--down)
+    }
+
+    .sev.high {
+      background: rgba(255, 209, 102, .12);
+      border: 1px solid rgba(255, 209, 102, .4);
+      color: var(--warn)
+    }
+
+    .sev.medium {
+      background: rgba(0, 212, 255, .08);
+      border: 1px solid rgba(0, 212, 255, .3);
+      color: var(--accent)
+    }
+
+    .ai-co {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono);
+      margin-left: auto
+    }
+
+    .ai-time {
+      font-size: 10px;
+      color: var(--muted);
+      font-family: var(--mono)
+    }
+
+    .ai-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #d8eaf8;
+      line-height: 1.4;
+      margin-bottom: 4px
+    }
+
+    .ai-body {
+      font-size: 11px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 6px
+    }
+
+    .ai-impact {
+      display: flex;
+      gap: 4px;
+      align-items: center
+    }
+
+    .imp-label {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: .5px
+    }
+
+    .imp-val {
+      font-size: 11px;
+      font-family: var(--mono);
+      font-weight: 500
+    }
+
+    .imp-val.red {
+      color: var(--down)
+    }
+
+    .imp-val.amber {
+      color: var(--warn)
+    }
+
+    .imp-mkt {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--accent);
+      margin-left: auto;
+      padding: 2px 6px;
+      border: 1px solid rgba(0, 212, 255, .3);
+      border-radius: 2px
+    }
+
+    .action-btn {
+      width: calc(100% - 32px);
+      margin: 8px 16px 4px;
+      padding: 8px;
+      background: rgba(255, 68, 85, .1);
+      border: 1px solid rgba(255, 68, 85, .4);
+      border-radius: 2px;
+      color: var(--down);
+      font-size: 11px;
+      font-family: var(--mono);
+      cursor: pointer;
+      transition: all .15s;
+      text-align: center
+    }
+
+    .action-btn:hover {
+      background: rgba(255, 68, 85, .2)
+    }
+
+    /* detail panel (slide-in) */
+    .detail-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(4, 7, 13, .7);
+      z-index: 100;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .2s
+    }
+
+    .detail-overlay.show {
+      opacity: 1;
+      pointer-events: all
+    }
+
+    .detail-panel {
+      position: fixed;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 420px;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      transform: translateX(100%);
+      transition: transform .25s ease-out;
+      z-index: 101;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden
+    }
+
+    .detail-panel.show {
+      transform: translateX(0)
+    }
+
+    .dp-header {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .dp-close {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--muted);
+      font-size: 14px;
+      cursor: pointer;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 2px;
+      margin-left: auto;
+      transition: all .15s
+    }
+
+    .dp-close:hover {
+      border-color: var(--down);
+      color: var(--down)
+    }
+
+    .dp-co-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff
+    }
+
+    .dp-co-type {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted)
+    }
+
+    .dp-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px
+    }
+
+    .dp-section-title {
+      font-size: 9px;
+      font-family: var(--mono);
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .site-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .site-row:last-child {
+      border-bottom: none
+    }
+
+    .site-flag {
+      font-size: 18px
+    }
+
+    .site-info {
+      flex: 1
+    }
+
+    .site-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: #c8daf0
+    }
+
+    .site-detail {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-top: 1px
+    }
+
+    .site-risk-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px
+    }
+
+    .site-risk-bar {
+      width: 60px;
+      height: 4px;
+      background: var(--border2);
+      border-radius: 2px;
+      overflow: hidden
+    }
+
+    .site-risk-fill {
+      height: 100%;
+      border-radius: 2px
+    }
+
+    .site-risk-num {
+      font-size: 12px;
+      font-family: var(--mono);
+      font-weight: 500;
+      min-width: 24px;
+      text-align: right
+    }
+
+    .poly-row {
+      display: flex;
+      align-items: center;
+      padding: 8px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      margin-bottom: 4px
+    }
+
+    .poly-q {
+      font-size: 11px;
+      flex: 1;
+      color: var(--text);
+      line-height: 1.4
+    }
+
+    .poly-prob {
+      font-size: 16px;
+      font-family: var(--display);
+      margin: 0 10px
+    }
+
+    .poly-chg {
+      font-size: 10px;
+      font-family: var(--mono)
+    }
+
+    .poly-chg.up {
+      color: var(--down)
+    }
+
+    .poly-chg.dn {
+      color: var(--up)
+    }
+
+    .rec-item {
+      padding: 8px 10px;
+      border-left: 2px solid;
+      margin-bottom: 4px
+    }
+
+    .rec-item.red {
+      border-color: var(--down);
+      background: rgba(255, 68, 85, .05)
+    }
+
+    .rec-item.amber {
+      border-color: var(--warn);
+      background: rgba(255, 209, 102, .05)
+    }
+
+    .rec-item.blue {
+      border-color: var(--accent);
+      background: rgba(0, 212, 255, .05)
+    }
+
+    .rec-text {
+      font-size: 11px;
+      line-height: 1.5;
+      color: var(--text)
+    }
+
+    /* NOTIFICATION TOAST */
+    .toast-wrap {
+      position: fixed;
+      top: 60px;
+      right: 316px;
+      z-index: 200;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      pointer-events: none
+    }
+
+    .toast {
+      background: var(--surface);
+      border: 1px solid;
+      border-radius: 2px;
+      padding: 10px 14px;
+      min-width: 280px;
+      max-width: 340px;
+      animation: toastIn .3s ease-out;
+      pointer-events: all
+    }
+
+    .toast.critical {
+      border-color: var(--down);
+      box-shadow: 0 0 20px rgba(255, 68, 85, .2)
+    }
+
+    .toast.high {
+      border-color: var(--warn);
+      box-shadow: 0 0 16px rgba(255, 209, 102, .15)
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(30px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateX(0)
+      }
+    }
+
+    .toast-top {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px
+    }
+
+    .toast-sev {
+      font-size: 9px;
+      font-family: var(--mono);
+      letter-spacing: .5px;
+      text-transform: uppercase;
+      font-weight: 500
+    }
+
+    .toast-sev.critical {
+      color: var(--down)
+    }
+
+    .toast-sev.high {
+      color: var(--warn)
+    }
+
+    .toast-co {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--muted);
+      margin-left: auto
+    }
+
+    .toast-dismiss {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0 2px
+    }
+
+    .toast-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #d8eaf0;
+      line-height: 1.35
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="shell">
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="logo-block">
+        <div>
+          <div class="logo-text">SENTIN<span>E</span>L</div>
+          <div class="logo-sub">GEOPOLITICAL RISK INTELLIGENCE</div>
+        </div>
+      </div>
+      <div class="topbar-metrics">
+        <div class="tm">
+          <div class="tm-label">全球風險指數</div>
+          <div class="tm-value red">8.4</div>
+          <div class="tm-sub">↑ +0.7 過去7日</div>
+        </div>
+        <div class="tm">
+          <div class="tm-label">曝險廠點</div>
+          <div class="tm-value blue">7</div>
+          <div class="tm-sub">跨 4 國</div>
+        </div>
+        <div class="tm">
+          <div class="tm-label">今日警報</div>
+          <div class="tm-value red" id="alert-count">3</div>
+          <div class="tm-sub">需要關注</div>
+        </div>
+        <div class="tm">
+          <div class="tm-label">最高風險地區</div>
+          <div class="tm-value amber">越南</div>
+          <div class="tm-sub">勞工風險 ↑</div>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <div class="live-pill">
+          <div class="live-dot"></div>LIVE
+        </div>
+        <div class="time-display" id="clock"></div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR: 企業列表 -->
+    <div class="sidebar">
+      <div class="sb-section">監控企業 / 3</div>
+
+      <div class="company-card active" onclick="selectCompany(0)">
+        <div class="cc-name">台達電子</div>
+        <div class="cc-industry">電源供應器 / 電子製造</div>
+        <div class="cc-sites">
+          <span class="site-tag red">越南 ×2</span>
+          <span class="site-tag amber">泰國 ×1</span>
+          <span class="site-tag green">印度 ×1</span>
+        </div>
+        <div class="cc-risk">
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" style="width:78%;background:linear-gradient(90deg,#ff4455,#ffd166)"></div>
+          </div>
+          <div class="risk-score" style="color:var(--down)">7.8</div>
+        </div>
+      </div>
+
+      <div class="company-card" onclick="selectCompany(1)">
+        <div class="cc-name">鴻海精密</div>
+        <div class="cc-industry">EMS / 消費電子代工</div>
+        <div class="cc-sites">
+          <span class="site-tag red">中國 ×3</span>
+          <span class="site-tag amber">越南 ×1</span>
+          <span class="site-tag amber">印度 ×2</span>
+        </div>
+        <div class="cc-risk">
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" style="width:85%;background:linear-gradient(90deg,#ff4455,#ff4455)"></div>
+          </div>
+          <div class="risk-score" style="color:var(--down)">8.5</div>
+        </div>
+      </div>
+
+      <div class="company-card" onclick="selectCompany(2)">
+        <div class="cc-name">台積電</div>
+        <div class="cc-industry">半導體製造</div>
+        <div class="cc-sites">
+          <span class="site-tag amber">日本 ×1</span>
+          <span class="site-tag green">美國 ×1</span>
+          <span class="site-tag green">德國 ×1</span>
+        </div>
+        <div class="cc-risk">
+          <div class="risk-bar-wrap">
+            <div class="risk-bar" style="width:42%;background:linear-gradient(90deg,#ffd166,#00e5a0)"></div>
+          </div>
+          <div class="risk-score" style="color:var(--warn)">4.2</div>
+        </div>
+      </div>
+
+      <div class="add-btn">+ 新增監控企業</div>
+    </div>
+
+    <!-- MAP -->
+    <div class="map-area">
+      <div id="map-wrap" class="map-wrap"></div>
+
+      <div class="map-controls">
+        <button class="mc-btn on" onclick="toggleLayer(this,'exposure')">廠點曝險</button>
+        <button class="mc-btn on" onclick="toggleLayer(this,'heat')">風險熱力</button>
+        <button class="mc-btn" onclick="toggleLayer(this,'supply')">供應鏈路徑</button>
+      </div>
+
+      <div class="map-legend">
+        <div class="ml-title">曝險廠點</div>
+        <div class="ml-row">
+          <div class="ml-dot" style="background:var(--down)"></div>高風險 (7–10)
+        </div>
+        <div class="ml-row">
+          <div class="ml-dot" style="background:var(--warn)"></div>中風險 (4–6)
+        </div>
+        <div class="ml-row">
+          <div class="ml-dot" style="background:var(--up)"></div>低風險 (1–3)
+        </div>
+      </div>
+
+      <div class="tooltip-map" id="map-tooltip"></div>
+    </div>
+
+    <!-- ALERT PANEL -->
+    <div class="alert-panel">
+      <div class="ap-header">
+        <div class="ap-title">即時警報中心</div>
+        <div class="ap-count" id="ap-count">3</div>
+      </div>
+      <div class="ap-filters">
+        <button class="af-btn red on" onclick="filterAlerts('all',this)">全部</button>
+        <button class="af-btn" onclick="filterAlerts('critical',this)">緊急</button>
+        <button class="af-btn" onclick="filterAlerts('high',this)">高</button>
+        <button class="af-btn" onclick="filterAlerts('medium',this)">中</button>
+      </div>
+      <div class="alerts-list" id="alerts-list"></div>
+    </div>
+  </div>
+
+  <!-- DETAIL OVERLAY -->
+  <div class="detail-overlay" id="detail-overlay" onclick="closeDetail()"></div>
+  <div class="detail-panel" id="detail-panel">
+    <div class="dp-header">
+      <div>
+        <div class="dp-co-name" id="dp-name"></div>
+        <div class="dp-co-type" id="dp-type"></div>
+      </div>
+      <button class="dp-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="dp-body" id="dp-body"></div>
+  </div>
+
+  <!-- TOAST CONTAINER -->
+  <div class="toast-wrap" id="toast-wrap"></div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <script>
+    // ── DATA ──────────────────────────────────────────────
+    const companies = [
+      {
+        name: '台達電子', type: '電源供應器 / 電子製造',
+        sites: [
+          { country: 'Vietnam', flag: '🇻🇳', name: '河內廠 (Hanoi)', detail: '1,200 人 · 電源模組', risk: 8.2, lat: 21.03, lng: 105.84 },
+          { country: 'Vietnam', flag: '🇻🇳', name: '胡志明廠 (HCMC)', detail: '800 人 · 散熱模組', risk: 7.6, lat: 10.82, lng: 106.63 },
+          { country: 'Thailand', flag: '🇹🇭', name: '曼谷廠', detail: '600 人 · 工業電源', risk: 5.1, lat: 13.75, lng: 100.52 },
+          { country: 'India', flag: '🇮🇳', name: '清奈廠', detail: '400 人 · 新廠擴建中', risk: 3.4, lat: 13.08, lng: 80.27 },
+        ],
+        markets: [
+          { q: 'Vietnam political stability 2026', prob: '71%', chg: '+3%', chgCls: 'up' },
+          { q: 'US-Vietnam trade tariff increase', prob: '38%', chg: '+12%', chgCls: 'up' },
+          { q: 'Vietnam labor strike major 2026', prob: '22%', chg: '+8%', chgCls: 'up' },
+        ],
+        recs: [
+          { cls: 'red', text: '越南河內廠附近出現工會組織活動，建議本週內與廠務主管確認勞動關係現況，評估預防性薪資調整方案。' },
+          { cls: 'amber', text: '美越關稅談判仍在進行中，建議準備關稅上調 10–15% 的成本影響試算，更新 Q3 報價策略。' },
+          { cls: 'blue', text: '印度清奈廠擴建進度符合預期，可考慮加速產線移轉計畫作為越南風險對沖。' },
+        ]
+      },
+      {
+        name: '鴻海精密', type: 'EMS / 消費電子代工',
+        sites: [
+          { country: 'China', flag: '🇨🇳', name: '鄭州廠', detail: '25萬人 · iPhone組裝', risk: 8.8, lat: 34.75, lng: 113.63 },
+          { country: 'China', flag: '🇨🇳', name: '深圳廠', detail: '10萬人 · 消費電子', risk: 8.5, lat: 22.54, lng: 114.06 },
+          { country: 'China', flag: '🇨🇳', name: '成都廠', detail: '8萬人 · 電腦', risk: 7.9, lat: 30.57, lng: 104.07 },
+          { country: 'Vietnam', flag: '🇻🇳', name: '北寧廠', detail: '3萬人 · AirPods', risk: 7.2, lat: 21.18, lng: 106.06 },
+          { country: 'India', flag: '🇮🇳', name: '斯里城廠', detail: '5萬人 · iPhone', risk: 4.8, lat: 13.65, lng: 79.97 },
+          { country: 'India', flag: '🇮🇳', name: '普納廠', detail: '2萬人 · 擴建中', risk: 4.2, lat: 18.52, lng: 73.86 },
+        ],
+        markets: [
+          { q: 'US-China tariff >60% sustained 2026', prob: '52%', chg: '+9%', chgCls: 'up' },
+          { q: 'Taiwan Strait military incident 2026', prob: '11%', chg: '+2%', chgCls: 'up' },
+          { q: 'Apple supply chain China reduction', prob: '67%', chg: '+4%', chgCls: 'up' },
+        ],
+        recs: [
+          { cls: 'red', text: '美中關稅維持 60% 以上機率升至 52%，鄭州廠對美出口產品成本衝擊估計達 18%，建議啟動緊急供應鏈重組評估。' },
+          { cls: 'amber', text: '印度廠產能仍不足以吸收中國廠的潛在缺口，加快斯里城廠 Phase 2 擴建審批程序為優先行動。' },
+          { cls: 'blue', text: '越南北寧廠可作為中期過渡節點，建議評估增加 AirPods 以外產品線的可行性。' },
+        ]
+      },
+      {
+        name: '台積電', type: '半導體製造',
+        sites: [
+          { country: 'Japan', flag: '🇯🇵', name: '熊本廠 (JASM)', detail: '成熟製程 22/28nm', risk: 3.2, lat: 32.8, lng: 130.7 },
+          { country: 'United States of America', flag: '🇺🇸', name: '亞利桑那廠', detail: '先進製程 N4/N3', risk: 3.8, lat: 33.45, lng: -112.07 },
+          { country: 'Germany', flag: '🇩🇪', name: '德勒斯登廠', detail: '汽車級成熟製程', risk: 2.9, lat: 51.05, lng: 13.74 },
+        ],
+        markets: [
+          { q: 'TSMC Arizona on schedule 2026', prob: '78%', chg: '+2%', chgCls: 'dn' },
+          { q: 'US CHIPS Act funding disbursed', prob: '82%', chg: '-1%', chgCls: 'dn' },
+          { q: 'Taiwan geopolitical risk elevated', prob: '34%', chg: '+6%', chgCls: 'up' },
+        ],
+        recs: [
+          { cls: 'blue', text: '三廠整體風險低，亞利桑那廠 N3 量產進度符合預期，CHIPS Act 補助撥款機率達 82%，財務規劃可保持樂觀假設。' },
+          { cls: 'amber', text: '台灣地緣政治風險指標近期上升至 34%，建議在下次董事會更新危機備援計畫（BCP）中的供應連續性章節。' },
+        ]
+      }
+    ];
+
+    const alerts = [
+      { id: 1, sev: 'critical', sevLabel: '緊急', company: '台達電子', time: '8 分鐘前', title: '越南河內發生大規模工人罷工', body: '河內工業區 3 個工廠停工，涉及 4,000 名工人，台達電子河內廠距離事發工業區 2.3 公里。', impact: '生產中斷風險', impCls: 'red', market: 'Vietnam labor strike', cat: 'critical' },
+      { id: 2, sev: 'high', sevLabel: '高', company: '鴻海精密', time: '34 分鐘前', title: '美國宣布對中國電子產品加徵額外 15% 關稅', body: '美國貿易代表辦公室宣布對中國製造電子產品加徵關稅，預計 60 天後生效，涵蓋智慧型手機組件。', impact: '成本影響 +$2.1億/季', impCls: 'amber', market: 'US-China tariff', cat: 'high' },
+      { id: 3, sev: 'high', sevLabel: '高', company: '台達電子', time: '1 小時前', title: '越南政府宣布提高最低工資 12%', body: '越南勞動部宣布 2026 年 7 月起調整各地最低工資，北部工業區漲幅最高達 12%，影響台達電子河內及北寧廠人事成本。', impact: '人事成本 +$380萬/年', impCls: 'amber', market: 'Vietnam wages', cat: 'high' },
+      { id: 4, sev: 'medium', sevLabel: '中', company: '台積電', time: '2 小時前', title: '日本熊本縣發生 5.2 級地震', body: '熊本縣發生 5.2 級地震，台積電 JASM 廠已啟動標準地震應變程序，設備安全確認中，預計 4 小時內恢復正常生產。', impact: '短暫停工評估中', impCls: 'amber', market: 'Japan earthquake', cat: 'medium' },
+      { id: 5, sev: 'medium', sevLabel: '中', company: '鴻海精密', time: '3 小時前', title: '印度工業部批准新外資工廠設立快速審批', body: '印度政府宣布電子製造業外資設廠審批時間縮短至 45 天，對鴻海普納廠擴建計畫有正面影響。', impact: '擴建時程提前 2 個月', impCls: 'red', market: 'India manufacturing', cat: 'medium' },
+    ];
+
+    let activeCompany = 0;
+    let activeFilter = 'all';
+    let showExposure = true;
+    let showHeat = true;
+    let svgEl, gEl, projFn, pathFn;
+
+    // ── CLOCK ──────────────────────────────────────────────
+    function updateClock() {
+      const now = new Date();
+      document.getElementById('clock').textContent =
+        now.toLocaleTimeString('zh-TW', { hour12: false }) + ' TST';
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // ── MAP ────────────────────────────────────────────────
+    function riskColor(r) {
+      if (r >= 7) return '#ff4455';
+      if (r >= 4) return '#ffd166';
+      return '#00e5a0';
+    }
+    function countryFill(name) {
+      const heatMap = {
+        'Vietnam': '#1a0d14', 'Thailand': '#140f08', 'China': '#1a0d0d',
+        'India': '#121614', 'Japan': '#0f1218', 'United States of America': '#0d1018',
+        'Germany': '#0d1018',
+      };
+      return heatMap[name] || '#080e18';
+    }
+
+    d3.json('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json').then(world => {
+      const wrap = document.getElementById('map-wrap');
+      const W = wrap.clientWidth || 900, H = wrap.clientHeight || 520;
+      projFn = d3.geoNaturalEarth1().scale(155).translate([W / 2, H / 2]);
+      pathFn = d3.geoPath(projFn);
+      svgEl = d3.select('#map-wrap').append('svg').attr('viewBox', `0 0 ${W} ${H}`).attr('width', '100%').attr('height', '100%');
+      gEl = svgEl.append('g');
+      const feats = topojson.feature(world, world.objects.countries).features;
+      const nameMap = { '840': 'United States of America', '156': 'China', '704': 'Vietnam', '764': 'Thailand', '356': 'India', '392': 'Japan', '276': 'Germany', '643': 'Russia', '804': 'Ukraine', '376': 'Israel', '364': 'Iran', '158': 'Taiwan' };
+
+      gEl.selectAll('.country-path').data(feats).join('path')
+        .attr('class', 'country-path')
+        .attr('d', pathFn)
+        .attr('fill', d => countryFill(nameMap[String(d.id).padStart(3, '0')]) || '#080e18')
+        .attr('stroke', '#1a2840').attr('stroke-width', 0.4)
+        .on('mousemove', function (event, d) {
+          const name = nameMap[String(d.id).padStart(3, '0')];
+          if (!name) return;
+          const tt = document.getElementById('map-tooltip');
+          tt.innerHTML = `<div style="font-weight:700;color:#fff;margin-bottom:2px">${name}</div><div style="color:var(--muted);font-size:10px">클릭하여 상세보기</div>`;
+          const rect = wrap.getBoundingClientRect();
+          let x = event.clientX - rect.left + 14, y = event.clientY - rect.top - 10;
+          if (x + 160 > W) x -= 170;
+          tt.style.left = x + 'px'; tt.style.top = y + 'px'; tt.classList.add('show');
+        })
+        .on('mouseleave', () => document.getElementById('map-tooltip').classList.remove('show'));
+
+      svgEl.call(d3.zoom().scaleExtent([0.8, 8]).on('zoom', e => gEl.attr('transform', e.transform)));
+      drawMarkers();
+    });
+
+    function drawMarkers() {
+      if (!gEl) return;
+      gEl.selectAll('.exp-group').remove();
+      if (!showExposure) return;
+      const co = companies[activeCompany];
+      co.sites.forEach((site, i) => {
+        const [x, y] = projFn([site.lng, site.lat]);
+        const r = riskColor(site.risk);
+        const g = gEl.append('g').attr('class', 'exp-group').attr('transform', `translate(${x},${y})`).attr('cursor', 'pointer')
+          .on('click', () => openDetail(activeCompany));
+        g.append('circle').attr('class', 'exp-pulse').attr('r', 10).attr('fill', 'none').attr('stroke', r).attr('stroke-width', 1.5).attr('opacity', 0.5);
+        g.append('circle').attr('r', 7).attr('fill', r).attr('fill-opacity', 0.25).attr('stroke', r).attr('stroke-width', 1.5);
+        g.append('circle').attr('r', 3.5).attr('fill', r);
+        if (site.risk >= 7.5) {
+          g.append('text').attr('y', -12).attr('text-anchor', 'middle').attr('font-size', '10px').attr('fill', '#fff').attr('font-family', 'IBM Plex Mono').text('⚠');
+        }
+        g.append('title').text(`${site.flag} ${site.name} — 風險 ${site.risk}`);
+      });
+    }
+
+    // ── ALERTS ─────────────────────────────────────────────
+    function renderAlerts() {
+      const list = document.getElementById('alerts-list');
+      const filtered = activeFilter === 'all' ? alerts : alerts.filter(a => a.cat === activeFilter);
+      list.innerHTML = filtered.map(a => `
+    <div class="alert-item" onclick="openAlertDetail(${a.id})">
+      <div class="ai-top">
+        <span class="sev ${a.sev}">${a.sevLabel}</span>
+        <span class="ai-co">${a.company}</span>
+        <span class="ai-time">${a.time}</span>
+      </div>
+      <div class="ai-title">${a.title}</div>
+      <div class="ai-body">${a.body}</div>
+      <div class="ai-impact">
+        <span class="imp-label">衝擊</span>
+        <span class="imp-val ${a.impCls}">${a.impact}</span>
+        <span class="imp-mkt">${a.market}</span>
+      </div>
+    </div>
+  `).join('');
+      if (filtered.some(a => a.sev === 'critical')) {
+        list.innerHTML += `<button class="action-btn" onclick="alert('已啟動緊急應變流程')">⚡ 啟動緊急應變程序</button>`;
+      }
+    }
+
+    function filterAlerts(f, btn) {
+      activeFilter = f;
+      document.querySelectorAll('.af-btn').forEach(b => { b.classList.remove('on'); b.classList.remove('red') });
+      btn.classList.add('on');
+      if (f === 'critical') btn.classList.add('red');
+      renderAlerts();
+    }
+
+    // ── COMPANY SELECT ──────────────────────────────────────
+    function selectCompany(idx) {
+      activeCompany = idx;
+      document.querySelectorAll('.company-card').forEach((c, i) => c.classList.toggle('active', i === idx));
+      drawMarkers();
+    }
+
+    // ── DETAIL PANEL ────────────────────────────────────────
+    function openDetail(idx) {
+      const co = companies[idx];
+      document.getElementById('dp-name').textContent = co.name;
+      document.getElementById('dp-type').textContent = co.type;
+      const body = document.getElementById('dp-body');
+      body.innerHTML = `
+    <div>
+      <div class="dp-section-title">廠點風險明細</div>
+      ${co.sites.map(s => `
+        <div class="site-row">
+          <div class="site-flag">${s.flag}</div>
+          <div class="site-info">
+            <div class="site-name">${s.name}</div>
+            <div class="site-detail">${s.detail}</div>
+          </div>
+          <div class="site-risk-wrap">
+            <div class="site-risk-bar"><div class="site-risk-fill" style="width:${s.risk * 10}%;background:${riskColor(s.risk)}"></div></div>
+            <div class="site-risk-num" style="color:${riskColor(s.risk)}">${s.risk}</div>
+          </div>
+        </div>`).join('')}
+    </div>
+    <div>
+      <div class="dp-section-title">相關 Polymarket 市場機率</div>
+      ${co.markets.map(m => `
+        <div class="poly-row">
+          <div class="poly-q">${m.q}</div>
+          <div class="poly-prob" style="color:${parseFloat(m.prob) > 50 ? 'var(--down)' : 'var(--warn)'}">${m.prob}</div>
+          <div class="poly-chg ${m.chgCls}">${m.chg}</div>
+        </div>`).join('')}
+    </div>
+    <div>
+      <div class="dp-section-title">AI 建議行動</div>
+      ${co.recs.map(r => `<div class="rec-item ${r.cls}"><div class="rec-text">${r.text}</div></div>`).join('')}
+    </div>
+  `;
+      document.getElementById('detail-overlay').classList.add('show');
+      document.getElementById('detail-panel').classList.add('show');
+    }
+
+    function openAlertDetail(id) {
+      const a = alerts.find(x => x.id === id);
+      if (!a) return;
+      const coIdx = companies.findIndex(c => c.name === a.company);
+      if (coIdx >= 0) openDetail(coIdx);
+    }
+
+    function closeDetail() {
+      document.getElementById('detail-overlay').classList.remove('show');
+      document.getElementById('detail-panel').classList.remove('show');
+    }
+
+    // ── LAYER TOGGLE ───────────────────────────────────────
+    function toggleLayer(btn, layer) {
+      btn.classList.toggle('on');
+      if (layer === 'exposure') { showExposure = !showExposure; drawMarkers(); }
+    }
+
+    // ── TOAST NOTIFICATIONS ────────────────────────────────
+    function showToast(alert) {
+      const wrap = document.getElementById('toast-wrap');
+      const t = document.createElement('div');
+      t.className = `toast ${alert.sev}`;
+      t.innerHTML = `
+    <div class="toast-top">
+      <span class="toast-sev ${alert.sev}">${alert.sevLabel}警報</span>
+      <span class="toast-co">${alert.company}</span>
+      <button class="toast-dismiss" onclick="this.closest('.toast').remove()">✕</button>
+    </div>
+    <div class="toast-title">${alert.title}</div>`;
+      wrap.appendChild(t);
+      setTimeout(() => t.style.cssText = 'opacity:0;transition:opacity .3s', 5000);
+      setTimeout(() => t.remove(), 5400);
+    }
+
+    // ── SIMULATE LIVE ALERTS ────────────────────────────────
+    const newAlerts = [
+      { id: 10, sev: 'critical', sevLabel: '緊急', company: '鴻海精密', time: '剛剛', title: '美國商務部發布新半導體出口管制清單', body: '美國商務部新增 12 項晶片出口管制，涉及鴻海中國廠使用的部分設備供應商。', impact: '設備採購受阻風險', impCls: 'red', market: 'US export controls', cat: 'critical' },
+      { id: 11, sev: 'high', sevLabel: '高', company: '台達電子', time: '剛剛', title: '泰國洪水預警：曼谷工業區淹水風險上升', body: '泰國氣象局發布洪水預警，曼谷周邊工業區在未來 72 小時內有 35% 淹水機率。', impact: '生產中斷風險', impCls: 'amber', market: 'Thailand flood', cat: 'high' },
+    ];
+    let newAlertIdx = 0;
+    setInterval(() => {
+      if (newAlertIdx < newAlerts.length) {
+        const a = newAlerts[newAlertIdx++];
+        alerts.unshift(a);
+        renderAlerts();
+        const cnt = alerts.filter(x => x.cat === 'critical' || x.cat === 'high').length;
+        document.getElementById('alert-count').textContent = cnt;
+        document.getElementById('ap-count').textContent = cnt;
+        showToast(a);
+      }
+    }, 12000);
+
+    // ── INIT ────────────────────────────────────────────────
+    renderAlerts();
+    setTimeout(() => showToast(alerts[0]), 2000);
+  </script>
+</body>
+
+</html>
